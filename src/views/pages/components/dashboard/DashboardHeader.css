@@ -1,0 +1,293 @@
+.dashboard-header {
+    margin-bottom: 42px;
+    padding-bottom: 28px;
+
+    border-bottom: 1px solid rgba(35, 35, 35, 0.35);
+}
+
+.dashboard-header__inner {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 18px;
+}
+
+.dashboard-header__left {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.logo-container {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.logo-icon {
+    width: 56px;
+    height: 56px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    border-radius: 16px;
+    background: #171717;
+    border: 1px solid #2a2a2a;
+}
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+
+    padding: 6px 12px;
+    border-radius: 999px;
+    border: 1px solid #2a2a2a;
+    background: rgba(139, 92, 246, 0.10);
+
+    color: #c4b5fd;
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+}
+
+.dashboard-info h2 {
+    color: #ffffff;
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin: 0 0 6px;
+}
+
+.dashboard-info p {
+    color: #8b8b8b;
+    font-size: 0.95rem;
+    margin: 0;
+}
+
+.dashboard-header__left h1 {
+    color: #fff;
+
+    font-size: 2.6rem;
+    font-weight: 800;
+
+    letter-spacing: -0.04em;
+
+    margin: 0;
+}
+
+.dashboard-header__right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.search-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 14px;
+    height: 46px;
+
+    background: #171717;
+    border: 1px solid #2a2a2a;
+    border-radius: 12px;
+}
+
+.search-icon {
+    color: #8b8b8b;
+}
+
+.search-input {
+    width: 260px;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: #fff;
+    font-weight: 600;
+    font-size: 0.92rem;
+}
+
+.search-input::placeholder {
+    color: #6b7280;
+}
+
+.header-icon {
+    width: 46px;
+    height: 46px;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    background: #171717;
+
+    border: 1px solid #2a2a2a;
+    border-radius: 12px;
+
+    color: #bdbdbd;
+
+    cursor: pointer;
+
+    transition: .25s;
+}
+
+.header-icon:hover {
+    background: #202020;
+    color: #fff;
+}
+
+.wallet-button {
+    height: 46px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    padding: 0 18px;
+
+    background: #171717;
+
+    border: 1px solid #2a2a2a;
+    border-radius: 12px;
+
+    color: #fff;
+    font-weight: 600;
+    line-height: 1;
+
+    cursor: pointer;
+
+    transition: background 0.25s ease, border-color 0.25s ease, transform 0.15s ease;
+}
+
+.wallet-button:hover {
+    background: #202020;
+    border-color: rgba(120, 120, 120, .9);
+}
+
+.wallet-button:focus-visible {
+    outline: 2px solid rgba(170, 59, 255, 0.7);
+    outline-offset: 2px;
+    border-color: rgba(170, 59, 255, 0.75);
+}
+
+/* tránh trường hợp chữ/ icon bị “nhảy” khi focus */
+.wallet-button:active {
+    transform: translateY(1px);
+}
+
+
+.header-avatar {
+    width: 46px;
+    height: 46px;
+
+    border-radius: 50%;
+
+    background: #202020;
+
+    border: 1px solid #2f2f2f;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    color: #fff;
+    font-weight: 600;
+}
+
+/* Simple, responsive header */
+.user-section,
+.mobile-menu-btn {
+    display: none;
+}
+
+.wallet-button__text {
+    display: inline;
+}
+
+.wallet-button__text--hide {
+    display: none;
+}
+
+/* header menu dropdown */
+.header-menu {
+    position: relative;
+}
+
+.header-menu__dropdown {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+
+    min-width: 260px;
+
+    background: #171717;
+    border: 1px solid rgba(55, 55, 55, .95);
+    border-radius: 14px;
+
+    box-shadow: 0 18px 40px rgba(0, 0, 0, .35);
+    padding: 10px;
+
+    display: none;
+    z-index: 50;
+}
+
+.header-menu__item {
+    width: 100%;
+
+    background: transparent;
+    border: none;
+
+    color: #fff;
+    text-align: left;
+
+    padding: 12px 12px;
+    border-radius: 10px;
+
+    cursor: pointer;
+    font-weight: 600;
+    transition: background .2s ease;
+}
+
+.header-menu__item:hover {
+    background: rgba(170, 59, 255, 0.12);
+}
+
+/* Mở dropdown khi hover hoặc focus */
+.header-menu:hover .header-menu__dropdown,
+.header-menu:focus-within .header-menu__dropdown {
+    display: block;
+}
+
+
+/* Khi có dropdown, có thể hiện text lại (nếu cần) */
+@media (min-width: 901px) {
+    .wallet-button--menu .wallet-button__text--hide {
+        display: none;
+    }
+}
+
+
+@media (max-width: 900px) {
+    .dashboard-header {
+        flex-direction: column;
+        gap: 18px;
+        padding-bottom: 18px;
+    }
+
+    .dashboard-header__right {
+        width: 100%;
+        flex-wrap: wrap;
+        justify-content: flex-start;
+    }
+
+    .search-input {
+        width: 100%;
+        min-width: 0;
+    }
+}
+

@@ -1,0 +1,58 @@
+.warranty-chart {
+    background: linear-gradient(180deg, rgba(26,26,26,.9) 0%, rgba(15,15,15,.95) 100%);
+
+    border: 1px solid rgba(55, 55, 55, .9);
+    border-radius: 18px;
+
+    padding: 24px;
+
+    transition: all .25s ease;
+    position: relative;
+    overflow-x: hidden;
+    overflow-y: hidden;
+}
+
+
+.warranty-chart:hover {
+    border-color: #3a3a3a;
+}
+
+.warranty-chart__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    margin-bottom: 24px;
+}
+
+.warranty-chart__header h3 {
+    color: #ffffff;
+
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.warranty-chart__header span {
+    color: #8b8b8b;
+
+    font-size: .9rem;
+}
+
+.warranty-chart__body {
+    width: 100%;
+    height: 320px;
+}
+
+.recharts-cartesian-grid line {
+    stroke: #2a2a2a;
+}
+
+.recharts-xAxis .recharts-cartesian-axis-tick-value,
+.recharts-yAxis .recharts-cartesian-axis-tick-value {
+    fill: #8b8b8b;
+    font-size: 12px;
+}
+
+.recharts-tooltip-wrapper {
+    outline: none;
+}
