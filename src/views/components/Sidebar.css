@@ -1,0 +1,256 @@
+.sidebar {
+    width: 260px;
+    min-height: 100svh;
+    display: flex;
+    flex-direction: column;
+    padding: 28px 16px 24px;
+    gap: 6px;
+    background: #111116;
+    border-right: 1px solid #1e1e26;
+    position: sticky;
+    top: 0;
+    height: 100svh;
+    flex-shrink: 0;
+}
+
+/* Logo */
+.sidebar__logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 8px;
+    margin-bottom: 20px;
+}
+
+.sidebar__logo-icon {
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #1a1a22;
+    border: 1px solid #2a2a36;
+    border-radius: 12px;
+    font-size: 22px;
+}
+
+.sidebar__badge {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 999px;
+    background: rgba(139, 92, 246, 0.15);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    color: #c4b5fd;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    margin-bottom: 2px;
+}
+
+.sidebar__brand {
+    margin: 0;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: -0.02em;
+}
+
+/* Mode toggle badge */
+.sidebar__mode-badge {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 9px 14px;
+    border-radius: 10px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid;
+    transition: all 0.2s ease;
+    margin-bottom: 8px;
+    text-align: left;
+    width: 100%;
+}
+
+.sidebar__mode-badge--mock {
+    background: rgba(245, 158, 11, 0.08);
+    border-color: rgba(245, 158, 11, 0.3);
+    color: #fbbf24;
+}
+
+.sidebar__mode-badge--mock:hover {
+    background: rgba(245, 158, 11, 0.14);
+}
+
+.sidebar__mode-badge--web3 {
+    background: rgba(16, 185, 129, 0.08);
+    border-color: rgba(16, 185, 129, 0.3);
+    color: #34d399;
+}
+
+.sidebar__mode-badge--web3:hover {
+    background: rgba(16, 185, 129, 0.14);
+}
+
+/* Nav */
+.sidebar__nav {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.sidebar__nav-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: none;
+    background: transparent;
+    color: #6b7280;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: left;
+    width: 100%;
+}
+
+.sidebar__nav-item:hover {
+    background: #1a1a22;
+    color: #e5e7eb;
+}
+
+.sidebar__nav-item--active {
+    background: rgba(139, 92, 246, 0.15);
+    color: #c4b5fd;
+    border: 1px solid rgba(139, 92, 246, 0.25);
+}
+
+.sidebar__nav-item--active:hover {
+    background: rgba(139, 92, 246, 0.2);
+    color: #ddd6fe;
+}
+
+/* Spacer */
+.sidebar__spacer {
+    flex: 1;
+}
+
+/* Wallet section */
+.sidebar__wallet {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-top: 16px;
+    border-top: 1px solid #1e1e26;
+}
+
+.sidebar__wallet-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 4px;
+    flex-wrap: wrap;
+}
+
+.sidebar__wallet-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.sidebar__wallet-dot--connected {
+    background: #10b981;
+    box-shadow: 0 0 6px rgba(16, 185, 129, 0.7);
+}
+
+.sidebar__wallet-addr {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #d1d5db;
+    font-family: ui-monospace, monospace;
+}
+
+.sidebar__admin-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 2px 7px;
+    border-radius: 999px;
+    background: rgba(139, 92, 246, 0.15);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    color: #c4b5fd;
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.sidebar__btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid;
+    transition: all 0.2s ease;
+    width: 100%;
+}
+
+.sidebar__btn--connect {
+    background: rgba(139, 92, 246, 0.12);
+    border-color: rgba(139, 92, 246, 0.4);
+    color: #c4b5fd;
+}
+
+.sidebar__btn--connect:hover {
+    background: rgba(139, 92, 246, 0.22);
+    border-color: rgba(139, 92, 246, 0.7);
+}
+
+.sidebar__btn--danger {
+    background: rgba(239, 68, 68, 0.08);
+    border-color: rgba(239, 68, 68, 0.25);
+    color: #f87171;
+}
+
+.sidebar__btn--danger:hover {
+    background: rgba(239, 68, 68, 0.15);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .sidebar {
+        width: 64px;
+        padding: 20px 10px;
+    }
+
+    .sidebar__logo > div,
+    .sidebar__brand,
+    .sidebar__badge,
+    .sidebar__mode-badge span,
+    .sidebar__nav-item span,
+    .sidebar__wallet-addr,
+    .sidebar__admin-badge,
+    .sidebar__btn span {
+        display: none;
+    }
+
+    .sidebar__mode-badge {
+        justify-content: center;
+        padding: 10px;
+    }
+
+    .sidebar__nav-item {
+        justify-content: center;
+        padding: 12px;
+    }
+
+    .sidebar__btn {
+        padding: 10px;
+    }
+}

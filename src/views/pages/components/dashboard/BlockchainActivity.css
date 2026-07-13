@@ -61,6 +61,14 @@
     border-radius: 12px;
 
     transition: all .25s ease;
+    width: 100%;
+    text-align: left;
+}
+
+.transaction-card--clickable {
+    cursor: pointer;
+    color: inherit;
+    font: inherit;
 }
 
 .transaction-card:hover {
@@ -93,6 +101,12 @@
     color: #8b8b8b;
 
     font-size: .82rem;
+}
+
+.transaction-card__time {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
 }
 
 .status-success {

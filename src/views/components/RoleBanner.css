@@ -1,0 +1,60 @@
+.role-banner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px 16px;
+    margin-bottom: 20px;
+    padding: 14px 18px;
+    border-radius: 14px;
+    border: 1px solid #2a2a2a;
+    background: #141414;
+}
+
+.role-banner__left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.role-banner__badge {
+    padding: 5px 12px;
+    border-radius: 999px;
+    border: 1px solid;
+    font-size: 0.78rem;
+    font-weight: 700;
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.role-banner__mode {
+    color: #8b8b8b;
+    font-size: 0.82rem;
+    font-weight: 600;
+}
+
+.role-banner__perms {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.role-banner__perm {
+    padding: 4px 10px;
+    border-radius: 8px;
+    background: rgba(139, 92, 246, 0.12);
+    color: #c4b5fd;
+    font-size: 0.72rem;
+    font-weight: 600;
+}
+
+.role-banner__warn {
+    width: 100%;
+    margin: 0;
+    color: #fbbf24;
+    font-size: 0.82rem;
+}
+
+.role-banner__warn code {
+    background: #1d1d1d;
+    padding: 2px 6px;
+    border-radius: 6px;
+}

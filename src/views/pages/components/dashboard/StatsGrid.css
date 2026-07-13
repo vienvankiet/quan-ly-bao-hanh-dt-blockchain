@@ -6,6 +6,25 @@
     margin: 28px 0;
 }
 
+.stats-grid__card-btn {
+    padding: 0;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    text-align: left;
+    border-radius: 18px;
+    transition: transform 0.15s ease;
+}
+
+.stats-grid__card-btn:hover {
+    transform: translateY(-2px);
+}
+
+.stats-grid__card-btn:focus-visible {
+    outline: 2px solid rgba(139, 92, 246, 0.6);
+    outline-offset: 2px;
+}
+
 
 @media (max-width: 1200px) {
     .stats-grid {

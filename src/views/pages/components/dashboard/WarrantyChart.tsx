@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import {
     Area,
     AreaChart,
@@ -8,19 +9,40 @@ import {
     YAxis,
 } from "recharts";
 
+import { useWeb3 } from "../../../../controllers/Web3Context";
+
 import "./WarrantyChart.css";
 
-const data = [
-    { month: "Jan", activated: 120 },
-    { month: "Feb", activated: 180 },
-    { month: "Mar", activated: 240 },
-    { month: "Apr", activated: 300 },
-    { month: "May", activated: 270 },
-    { month: "Jun", activated: 360 },
-    { month: "Jul", activated: 420 },
-];
+function buildChartData(activatedAtList: number[]) {
+    const months: { month: string; yearMonth: string; activated: number }[] = [];
+    const now = new Date();
+
+    for (let i = 6; i >= 0; i--) {
+        const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        months.push({
+            month: d.toLocaleString("en", { month: "short" }),
+            yearMonth: `${d.getFullYear()}-${d.getMonth()}`,
+            activated: 0,
+        });
+    }
+
+    for (const ts of activatedAtList) {
+        const d = new Date(ts * 1000);
+        const key = `${d.getFullYear()}-${d.getMonth()}`;
+        const entry = months.find((m) => m.yearMonth === key);
+        if (entry) entry.activated++;
+    }
+
+    return months.map(({ month, activated }) => ({ month, activated }));
+}
 
 const WarrantyChart = () => {
+    const { warranties } = useWeb3();
+    const data = useMemo(
+        () => buildChartData(warranties.map((w) => w.activatedAt)),
+        [warranties]
+    );
+
     return (
         <section className="warranty-chart">
             <div className="warranty-chart__header">
@@ -80,6 +102,7 @@ const WarrantyChart = () => {
                             tickLine={false}
                             axisLine={false}
                             tick={{ fill: "#8b8b8b", fontSize: 12 }}
+                            allowDecimals={false}
                         />
 
                         <Tooltip

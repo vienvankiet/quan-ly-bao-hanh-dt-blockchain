@@ -1,0 +1,8 @@
+{
+  "network": "cronosTestnet",
+  "chainId": 338,
+  "contractAddress": "0x328c6F067cD8831F2C4609abFdd7f7A815Eb139f",
+  "admin": "0xc517dB8bB6Bd36f2Ecf66e8ce7bd7E4Ed4051134",
+  "deployer": "0xc517dB8bB6Bd36f2Ecf66e8ce7bd7E4Ed4051134",
+  "deployedAt": "2026-07-13T18:52:30.264Z"
+}
