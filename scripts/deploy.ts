@@ -6,7 +6,7 @@ const DEPLOYMENTS_DIR = resolve(process.cwd(), "deployments");
 const ENV_FILE = resolve(process.cwd(), ".env");
 
 async function main() {
-    const connection = await hre.network.connect();
+    const connection = await hre.network.getOrCreate();
     const networkName = connection.networkName;
     const ethers = connection.ethers;
 

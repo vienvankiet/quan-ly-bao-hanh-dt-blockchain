@@ -1,0 +1,3 @@
+console.log("Total warranties:", total.toString());
+const total = await contract.getTotalWarranties();
+const contract = await ethers.getContractAt("WarrantyManager", "0x68A079c6d27E0Dd8E1f52621216FBc8Db06414be");

@@ -367,7 +367,15 @@ export function TransferModal({
     );
 }
 
-// ─── 4. Add Repair Modal ──────────────────────────────────────────────────────
+// ─── 4. Add Repair / Request Repair Modal ──────────────────────────────────────
+interface RepairRequestItem {
+    id: string;
+    imei: string;
+    desc: string;
+    timestamp: number;
+    requester: string;
+}
+
 export function RepairModal({
     onClose,
     initialImei = "",
@@ -382,6 +390,7 @@ export function RepairModal({
         isConnected,
         canManageRepair,
         connectWallet,
+        account,
     } = useWeb3();
     const [imei, setImei] = useState(initialImei);
     const [completeImei, setCompleteImei] = useState(initialImei);
@@ -389,28 +398,34 @@ export function RepairModal({
     const [loading, setLoading] = useState(false);
     const [completeLoading, setCompleteLoading] = useState(false);
     const [toast, setToast] = useState<{ type: "success" | "error"; msg: string } | null>(null);
+    const [requests, setRequests] = useState<RepairRequestItem[]>([]);
+
+    const isAdmin = canManageRepair();
+
+    useEffect(() => {
+        if (isAdmin) {
+            const reqs = JSON.parse(localStorage.getItem("wm_repair_requests") || "[]");
+            setRequests(reqs);
+        }
+    }, [isAdmin]);
 
     const showToast = (type: "success" | "error", msg: string) => {
         setToast({ type, msg });
         setTimeout(() => setToast(null), 3500);
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleAdminSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!isMockMode && !isConnected) {
             showToast("error", "Vui lòng đăng nhập MetaMask trước!");
             void connectWallet();
             return;
         }
-        if (!canManageRepair()) {
-            showToast("error", "Chỉ tài khoản Admin mới được thêm sửa chữa!");
-            return;
-        }
         if (!imei.trim() || !desc.trim()) return;
         setLoading(true);
         try {
             await addRepairRecord(imei.trim(), desc.trim());
-            showToast("success", "Đã thêm lịch sử sửa chữa!");
+            showToast("success", "Đã thêm lịch sử sửa chữa lên Blockchain!");
             setImei("");
             setDesc("");
         } catch (err) {
@@ -420,12 +435,37 @@ export function RepairModal({
         }
     };
 
-    const handleComplete = async (e: React.FormEvent) => {
+    const handleUserSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        if (!canManageRepair()) {
-            showToast("error", "Chỉ tài khoản Admin mới được đánh dấu hoàn tất!");
+        if (!isMockMode && !isConnected) {
+            showToast("error", "Vui lòng đăng nhập MetaMask trước!");
+            void connectWallet();
             return;
         }
+        if (!imei.trim() || !desc.trim()) return;
+        setLoading(true);
+        try {
+            const reqs = JSON.parse(localStorage.getItem("wm_repair_requests") || "[]");
+            reqs.push({
+                id: Date.now().toString(),
+                imei: imei.trim(),
+                desc: desc.trim(),
+                timestamp: Date.now(),
+                requester: account || "Guest",
+            });
+            localStorage.setItem("wm_repair_requests", JSON.stringify(reqs));
+            showToast("success", "Đã gửi yêu cầu bảo hành đến Hãng!");
+            setImei("");
+            setDesc("");
+        } catch (err) {
+            showToast("error", "Gửi yêu cầu thất bại");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleComplete = async (e: React.FormEvent) => {
+        e.preventDefault();
         if (!completeImei.trim()) return;
         setCompleteLoading(true);
         try {
@@ -439,10 +479,23 @@ export function RepairModal({
         }
     };
 
+    const handleApproveRequest = (req: RepairRequestItem) => {
+        setImei(req.imei);
+        setDesc(req.desc);
+        const newReqs = requests.filter((r) => r.id !== req.id);
+        setRequests(newReqs);
+        localStorage.setItem("wm_repair_requests", JSON.stringify(newReqs));
+    };
+
     return (
-        <ModalOverlay title="Thêm lịch sử sửa chữa" icon={<Wrench size={20} />} onClose={onClose}>
+        <ModalOverlay 
+            title={isAdmin ? "Quản lý sửa chữa" : "Yêu cầu bảo hành / Sửa chữa"} 
+            icon={<Wrench size={20} />} 
+            onClose={onClose}
+        >
             {toast && <Toast type={toast.type} msg={toast.msg} />}
-            <form className="modal-form" onSubmit={handleSubmit}>
+            
+            <form className="modal-form" onSubmit={isAdmin ? handleAdminSubmit : handleUserSubmit}>
                 <div className="modal-field">
                     <label>IMEI thiết bị *</label>
                     <input
@@ -454,9 +507,9 @@ export function RepairModal({
                     />
                 </div>
                 <div className="modal-field">
-                    <label>Mô tả sửa chữa *</label>
+                    <label>{isAdmin ? "Mô tả lỗi / hạng mục sửa chữa *" : "Mô tả tình trạng lỗi của máy *"}</label>
                     <textarea
-                        placeholder="Mô tả lỗi / hạng mục sửa chữa..."
+                        placeholder={isAdmin ? "Ghi chú sửa chữa (lưu on-chain)..." : "Mô tả chi tiết lỗi để gửi cho hãng..."}
                         value={desc}
                         onChange={(e) => setDesc(e.target.value)}
                         rows={3}
@@ -466,33 +519,70 @@ export function RepairModal({
                 <button type="submit" className="modal-submit" disabled={loading}>
                     {loading ? (
                         <><Loader2 size={16} className="modal-spin" /> Đang xử lý...</>
+                    ) : isAdmin ? (
+                        <><Wrench size={16} /> Thêm lịch sử sửa chữa</>
                     ) : (
-                        <><Wrench size={16} /> Thêm lịch sử</>
+                        <><Wrench size={16} /> Gửi yêu cầu</>
                     )}
                 </button>
             </form>
 
-            {canManageRepair() && (
-                <form className="modal-form modal-form--divider" onSubmit={handleComplete}>
-                    <h4 className="modal-subtitle">Hoàn tất sửa chữa</h4>
-                    <div className="modal-field">
-                        <label>IMEI thiết bị *</label>
-                        <input
-                            type="text"
-                            placeholder="356789123456789"
-                            value={completeImei}
-                            onChange={(e) => setCompleteImei(e.target.value.trim())}
-                            required
-                        />
-                    </div>
-                    <button type="submit" className="modal-submit modal-submit--outline" disabled={completeLoading}>
-                        {completeLoading ? (
-                            <><Loader2 size={16} className="modal-spin" /> Đang xử lý...</>
-                        ) : (
-                            <><CheckCircle2 size={16} /> Đánh dấu hoàn tất</>
-                        )}
-                    </button>
-                </form>
+            {isAdmin && (
+                <>
+                    <form className="modal-form modal-form--divider" onSubmit={handleComplete}>
+                        <h4 className="modal-subtitle">Hoàn tất sửa chữa</h4>
+                        <div className="modal-field">
+                            <label>IMEI thiết bị *</label>
+                            <input
+                                type="text"
+                                placeholder="356789123456789"
+                                value={completeImei}
+                                onChange={(e) => setCompleteImei(e.target.value.trim())}
+                                required
+                            />
+                        </div>
+                        <button type="submit" className="modal-submit modal-submit--outline" disabled={completeLoading}>
+                            {completeLoading ? (
+                                <><Loader2 size={16} className="modal-spin" /> Đang xử lý...</>
+                            ) : (
+                                <><CheckCircle2 size={16} /> Đánh dấu hoàn tất</>
+                            )}
+                        </button>
+                    </form>
+
+                    {requests.length > 0 && (
+                        <div className="modal-form modal-form--divider">
+                            <h4 className="modal-subtitle" style={{ marginBottom: "12px", color: "#eab308" }}>
+                                Yêu cầu từ người dùng ({requests.length})
+                            </h4>
+                            <div style={{ display: "flex", flexDirection: "column", gap: "10px", maxHeight: "180px", overflowY: "auto", paddingRight: "4px" }}>
+                                {requests.map((req) => (
+                                    <div key={req.id} style={{ background: "rgba(255,255,255,0.05)", padding: "12px", borderRadius: "10px", fontSize: "0.9rem", border: "1px solid rgba(255,255,255,0.1)" }}>
+                                        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "4px" }}>
+                                            <strong style={{ color: "#fff" }}>IMEI: {req.imei}</strong>
+                                            <span style={{ color: "#888", fontSize: "0.8rem" }}>
+                                                {new Date(req.timestamp).toLocaleDateString()}
+                                            </span>
+                                        </div>
+                                        <div style={{ color: "#aaa", marginBottom: "8px", fontStyle: "italic" }}>
+                                            "{req.desc}"
+                                        </div>
+                                        <div style={{ fontSize: "0.75rem", color: "#666", marginBottom: "8px", wordBreak: "break-all" }}>
+                                            Từ ví: {req.requester}
+                                        </div>
+                                        <button 
+                                            type="button" 
+                                            onClick={() => handleApproveRequest(req)}
+                                            style={{ background: "#22c55e", color: "#000", border: "none", padding: "6px 12px", borderRadius: "6px", cursor: "pointer", fontSize: "0.85rem", fontWeight: "600", width: "100%" }}
+                                        >
+                                            Duyệt & Điền form
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </>
             )}
         </ModalOverlay>
     );
