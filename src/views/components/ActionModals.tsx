@@ -374,6 +374,8 @@ interface RepairRequestItem {
     desc: string;
     timestamp: number;
     requester: string;
+    status: "pending" | "approved" | "rejected";
+    rejectReason?: string;
 }
 
 export function RepairModal({
@@ -398,16 +400,21 @@ export function RepairModal({
     const [loading, setLoading] = useState(false);
     const [completeLoading, setCompleteLoading] = useState(false);
     const [toast, setToast] = useState<{ type: "success" | "error"; msg: string } | null>(null);
+    
     const [requests, setRequests] = useState<RepairRequestItem[]>([]);
+    const [rejectingId, setRejectingId] = useState<string | null>(null);
+    const [rejectReason, setRejectReason] = useState("");
 
     const isAdmin = canManageRepair();
 
     useEffect(() => {
+        const reqs: RepairRequestItem[] = JSON.parse(localStorage.getItem("wm_repair_requests") || "[]");
         if (isAdmin) {
-            const reqs = JSON.parse(localStorage.getItem("wm_repair_requests") || "[]");
             setRequests(reqs);
+        } else if (account) {
+            setRequests(reqs.filter(r => r.requester.toLowerCase() === account.toLowerCase()));
         }
-    }, [isAdmin]);
+    }, [isAdmin, account]);
 
     const showToast = (type: "success" | "error", msg: string) => {
         setToast({ type, msg });
@@ -445,15 +452,18 @@ export function RepairModal({
         if (!imei.trim() || !desc.trim()) return;
         setLoading(true);
         try {
-            const reqs = JSON.parse(localStorage.getItem("wm_repair_requests") || "[]");
-            reqs.push({
+            const reqs: RepairRequestItem[] = JSON.parse(localStorage.getItem("wm_repair_requests") || "[]");
+            const newReq: RepairRequestItem = {
                 id: Date.now().toString(),
                 imei: imei.trim(),
                 desc: desc.trim(),
                 timestamp: Date.now(),
                 requester: account || "Guest",
-            });
+                status: "pending"
+            };
+            reqs.push(newReq);
             localStorage.setItem("wm_repair_requests", JSON.stringify(reqs));
+            setRequests(prev => [...prev, newReq]);
             showToast("success", "Đã gửi yêu cầu bảo hành đến Hãng!");
             setImei("");
             setDesc("");
@@ -482,9 +492,31 @@ export function RepairModal({
     const handleApproveRequest = (req: RepairRequestItem) => {
         setImei(req.imei);
         setDesc(req.desc);
-        const newReqs = requests.filter((r) => r.id !== req.id);
-        setRequests(newReqs);
-        localStorage.setItem("wm_repair_requests", JSON.stringify(newReqs));
+        
+        // Cập nhật trạng thái thành approved
+        const allReqs: RepairRequestItem[] = JSON.parse(localStorage.getItem("wm_repair_requests") || "[]");
+        const updatedReqs = allReqs.map(r => r.id === req.id ? { ...r, status: "approved" as const } : r);
+        localStorage.setItem("wm_repair_requests", JSON.stringify(updatedReqs));
+        
+        // Cập nhật state hiển thị cho Admin
+        setRequests(updatedReqs);
+        showToast("success", "Đã điền thông tin, hãy bấm 'Thêm lịch sử sửa chữa'");
+    };
+
+    const handleConfirmReject = (reqId: string) => {
+        if (!rejectReason.trim()) {
+            showToast("error", "Vui lòng nhập lý do từ chối");
+            return;
+        }
+        
+        const allReqs: RepairRequestItem[] = JSON.parse(localStorage.getItem("wm_repair_requests") || "[]");
+        const updatedReqs = allReqs.map(r => r.id === reqId ? { ...r, status: "rejected" as const, rejectReason: rejectReason.trim() } : r);
+        localStorage.setItem("wm_repair_requests", JSON.stringify(updatedReqs));
+        
+        setRequests(updatedReqs);
+        setRejectingId(null);
+        setRejectReason("");
+        showToast("success", "Đã từ chối yêu cầu");
     };
 
     return (
@@ -528,61 +560,124 @@ export function RepairModal({
             </form>
 
             {isAdmin && (
-                <>
-                    <form className="modal-form modal-form--divider" onSubmit={handleComplete}>
-                        <h4 className="modal-subtitle">Hoàn tất sửa chữa</h4>
-                        <div className="modal-field">
-                            <label>IMEI thiết bị *</label>
-                            <input
-                                type="text"
-                                placeholder="356789123456789"
-                                value={completeImei}
-                                onChange={(e) => setCompleteImei(e.target.value.trim())}
-                                required
-                            />
-                        </div>
-                        <button type="submit" className="modal-submit modal-submit--outline" disabled={completeLoading}>
-                            {completeLoading ? (
-                                <><Loader2 size={16} className="modal-spin" /> Đang xử lý...</>
-                            ) : (
-                                <><CheckCircle2 size={16} /> Đánh dấu hoàn tất</>
-                            )}
-                        </button>
-                    </form>
+                <form className="modal-form modal-form--divider" onSubmit={handleComplete}>
+                    <h4 className="modal-subtitle">Hoàn tất sửa chữa</h4>
+                    <div className="modal-field">
+                        <label>IMEI thiết bị *</label>
+                        <input
+                            type="text"
+                            placeholder="356789123456789"
+                            value={completeImei}
+                            onChange={(e) => setCompleteImei(e.target.value.trim())}
+                            required
+                        />
+                    </div>
+                    <button type="submit" className="modal-submit modal-submit--outline" disabled={completeLoading}>
+                        {completeLoading ? (
+                            <><Loader2 size={16} className="modal-spin" /> Đang xử lý...</>
+                        ) : (
+                            <><CheckCircle2 size={16} /> Đánh dấu hoàn tất</>
+                        )}
+                    </button>
+                </form>
+            )}
 
-                    {requests.length > 0 && (
-                        <div className="modal-form modal-form--divider">
-                            <h4 className="modal-subtitle" style={{ marginBottom: "12px", color: "#eab308" }}>
-                                Yêu cầu từ người dùng ({requests.length})
-                            </h4>
-                            <div style={{ display: "flex", flexDirection: "column", gap: "10px", maxHeight: "180px", overflowY: "auto", paddingRight: "4px" }}>
-                                {requests.map((req) => (
-                                    <div key={req.id} style={{ background: "rgba(255,255,255,0.05)", padding: "12px", borderRadius: "10px", fontSize: "0.9rem", border: "1px solid rgba(255,255,255,0.1)" }}>
-                                        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "4px" }}>
-                                            <strong style={{ color: "#fff" }}>IMEI: {req.imei}</strong>
-                                            <span style={{ color: "#888", fontSize: "0.8rem" }}>
-                                                {new Date(req.timestamp).toLocaleDateString()}
-                                            </span>
-                                        </div>
-                                        <div style={{ color: "#aaa", marginBottom: "8px", fontStyle: "italic" }}>
-                                            "{req.desc}"
-                                        </div>
-                                        <div style={{ fontSize: "0.75rem", color: "#666", marginBottom: "8px", wordBreak: "break-all" }}>
-                                            Từ ví: {req.requester}
-                                        </div>
-                                        <button 
-                                            type="button" 
-                                            onClick={() => handleApproveRequest(req)}
-                                            style={{ background: "#22c55e", color: "#000", border: "none", padding: "6px 12px", borderRadius: "6px", cursor: "pointer", fontSize: "0.85rem", fontWeight: "600", width: "100%" }}
-                                        >
-                                            Duyệt & Điền form
-                                        </button>
+            {/* Hiển thị danh sách yêu cầu chung (cho Admin xem tất cả, cho User xem của chính họ) */}
+            {requests.length > 0 && (
+                <div className="modal-form modal-form--divider">
+                    <h4 className="modal-subtitle" style={{ marginBottom: "12px", color: isAdmin ? "#eab308" : "#3b82f6" }}>
+                        {isAdmin ? `Yêu cầu từ người dùng (${requests.length})` : `Lịch sử yêu cầu của bạn (${requests.length})`}
+                    </h4>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "10px", maxHeight: "180px", overflowY: "auto", paddingRight: "4px" }}>
+                        {/* Sắp xếp ưu tiên pending lên đầu, mới nhất lên đầu */}
+                        {requests.sort((a, b) => {
+                            if (a.status === 'pending' && b.status !== 'pending') return -1;
+                            if (a.status !== 'pending' && b.status === 'pending') return 1;
+                            return b.timestamp - a.timestamp;
+                        }).map((req) => (
+                            <div key={req.id} style={{ background: "rgba(255,255,255,0.05)", padding: "12px", borderRadius: "10px", fontSize: "0.9rem", border: "1px solid rgba(255,255,255,0.1)" }}>
+                                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "4px" }}>
+                                    <strong style={{ color: "#fff" }}>IMEI: {req.imei}</strong>
+                                    <span style={{ color: "#888", fontSize: "0.8rem" }}>
+                                        {new Date(req.timestamp).toLocaleDateString()}
+                                    </span>
+                                </div>
+                                <div style={{ color: "#aaa", marginBottom: "8px", fontStyle: "italic" }}>
+                                    "{req.desc}"
+                                </div>
+                                {isAdmin && (
+                                    <div style={{ fontSize: "0.75rem", color: "#666", marginBottom: "8px", wordBreak: "break-all" }}>
+                                        Từ ví: {req.requester}
                                     </div>
-                                ))}
+                                )}
+                                
+                                {/* Trạng thái */}
+                                <div style={{ marginBottom: "8px", fontSize: "0.85rem", fontWeight: "500" }}>
+                                    Trạng thái: {' '}
+                                    {req.status === "pending" && <span style={{ color: "#eab308" }}>Chờ duyệt</span>}
+                                    {req.status === "approved" && <span style={{ color: "#22c55e" }}>Đã duyệt</span>}
+                                    {req.status === "rejected" && <span style={{ color: "#ef4444" }}>Bị từ chối</span>}
+                                </div>
+
+                                {req.status === "rejected" && req.rejectReason && (
+                                    <div style={{ fontSize: "0.8rem", color: "#fca5a5", marginBottom: "8px", background: "rgba(239,68,68,0.1)", padding: "6px", borderRadius: "4px" }}>
+                                        Lý do: {req.rejectReason}
+                                    </div>
+                                )}
+
+                                {/* Nút hành động cho Admin (chỉ hiện khi pending) */}
+                                {isAdmin && req.status === "pending" && (
+                                    <>
+                                        {rejectingId === req.id ? (
+                                            <div style={{ display: "flex", gap: "8px", marginTop: "8px", flexDirection: "column" }}>
+                                                <input 
+                                                    type="text" 
+                                                    placeholder="Nhập lý do từ chối..." 
+                                                    value={rejectReason}
+                                                    onChange={e => setRejectReason(e.target.value)}
+                                                    style={{ width: "100%", padding: "6px 8px", borderRadius: "6px", border: "1px solid #444", background: "#111", color: "#fff", fontSize: "0.8rem" }}
+                                                />
+                                                <div style={{ display: "flex", gap: "8px" }}>
+                                                    <button 
+                                                        type="button" 
+                                                        onClick={() => handleConfirmReject(req.id)}
+                                                        style={{ flex: 1, background: "#ef4444", color: "#fff", border: "none", padding: "6px", borderRadius: "6px", cursor: "pointer", fontSize: "0.8rem", fontWeight: "600" }}
+                                                    >
+                                                        Xác nhận từ chối
+                                                    </button>
+                                                    <button 
+                                                        type="button" 
+                                                        onClick={() => { setRejectingId(null); setRejectReason(""); }}
+                                                        style={{ flex: 1, background: "#444", color: "#fff", border: "none", padding: "6px", borderRadius: "6px", cursor: "pointer", fontSize: "0.8rem", fontWeight: "600" }}
+                                                    >
+                                                        Hủy
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div style={{ display: "flex", gap: "8px", marginTop: "8px" }}>
+                                                <button 
+                                                    type="button" 
+                                                    onClick={() => handleApproveRequest(req)}
+                                                    style={{ flex: 1, background: "#22c55e", color: "#000", border: "none", padding: "6px", borderRadius: "6px", cursor: "pointer", fontSize: "0.8rem", fontWeight: "600" }}
+                                                >
+                                                    Duyệt & Điền form
+                                                </button>
+                                                <button 
+                                                    type="button" 
+                                                    onClick={() => { setRejectingId(req.id); setRejectReason(""); }}
+                                                    style={{ flex: 1, background: "rgba(239,68,68,0.2)", color: "#ef4444", border: "1px solid rgba(239,68,68,0.5)", padding: "6px", borderRadius: "6px", cursor: "pointer", fontSize: "0.8rem", fontWeight: "600" }}
+                                                >
+                                                    Từ chối
+                                                </button>
+                                            </div>
+                                        )}
+                                    </>
+                                )}
                             </div>
-                        </div>
-                    )}
-                </>
+                        ))}
+                    </div>
+                </div>
             )}
         </ModalOverlay>
     );
